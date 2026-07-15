@@ -1,0 +1,8 @@
+.gradle/
+build/
+*.class
+*.jar
+*.war
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
