@@ -23,7 +23,7 @@ if "messages" not in st.session_state:
     )
 
 
-if "last_ subject" not in st.session_state:
+if "last_subject" not in st.session_state:
     st.session_state["last_subject"]=subject  
 
 if subject!=st.session_state["last_subject"]:
