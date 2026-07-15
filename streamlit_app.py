@@ -8,7 +8,7 @@ st.title("学习助手")
 with st.sidebar:
     subject=st.selectbox(
         "选择学科领域",
-        options=["文学 ","数学","计算机"]
+        options=["文学 ","数学","计算机","英语"]
     )
 
     style=st.selectbox(
