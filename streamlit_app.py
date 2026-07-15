@@ -42,7 +42,11 @@ def get_prompt_template(subject,style):
         "详细": "第一，针对用户提问给出直接答案和清晰的解释；第二，基于此提供必要的相关知识点的信息，以补充背景或加深理解。"
     }
 
-    system_template="你是{subject}领域的专家，根据用户提问作出回答。\n你需要遵循以下讲解风格：{style}。\n你应当礼貌拒绝与该学科无关的问题。"
+    system_template = """你是{subject}领域的专家，只能回答{subject}相关的问题。
+【重要规则】
+1. 如果用户的问题与{subject}无关，你必须礼貌拒绝，例如："抱歉，我是{subject}领域的学习助手，无法回答其他领域的问题。请问您有{subject}方面的问题吗？"
+2. 绝对不要回答与{subject}无关的问题，即使用户坚持要求。
+3. 你需要遵循以下讲解风格：{style}。"""
 
     prompt_template=ChatPromptTemplate(
         [
