@@ -8,7 +8,7 @@ st.title("学习助手")
 with st.sidebar:
     subject=st.selectbox(
         "选择学科领域",
-        options=["文学 ","数学","计算机","英语"]
+        options=["文学 ","数学","计算机"]
     )
 
     style=st.selectbox(
@@ -16,21 +16,27 @@ with st.sidebar:
         options=["简洁","详细"],
     )
 
-if "messages" not in st.session_state:
-    st.session_state["messages"]=[{"role":"assistant","content":"你好，我是你的学习助手！"}]
-    st.session_state["memory"]=ConversationBufferMemory(
-        memory_key="chat_history",return_messages=True
-    )
+if "all_memories" not in st.session_state:
+    st.session_state["all_memories"]={
+        "文学":ConversationBufferMemory(memory_key="chat_history",return_messages=True),
+        "数学":ConversationBufferMemory(memory_key="chat_history",return_messages=True),
+        "计算机":ConversationBufferMemory(memory_key="chat_history",return_messages=True)
+    }
+    st.session_state["all_memories"]={
+        "文学":[{"role":"assistant","content":"你好，我是你的文学学习助手！"}],
+        "数学":[{"role":"assistant","content":"你好，我是你的数学学习助手！"}],
+        "计算机":[{"role":"assistant","content":"你好，我是你的计算机学习助手！"}]
+    }
 
-
-if "last_subject" not in st.session_state:
+if "last_ subject" not in st.session_state:
     st.session_state["last_subject"]=subject  
 
 if subject!=st.session_state["last_subject"]:
-    st.session_state["memory"].clear()
-    st.session_state["messages"]=[{"role":"assistant","content":"你好，我是你的学习助手！"}]
     st.session_state["last_subject"]=subject
     st.rerun()
+
+current_memory=st.session_state["all_memories"][subject]
+current_messages=st.session_state["all_memories"][subject]
 
 for message in st.session_state["messages"]:
     st.chat_message(message["role"]).write(message["content"])
@@ -43,6 +49,7 @@ def get_prompt_template(subject,style):
     }
 
     system_template = """你是{subject}领域的专家，只能回答{subject}相关的问题。
+
 【重要规则】
 1. 如果用户的问题与{subject}无关，你必须礼貌拒绝，例如："抱歉，我是{subject}领域的学习助手，无法回答其他领域的问题。请问您有{subject}方面的问题吗？"
 2. 绝对不要回答与{subject}无关的问题，即使用户坚持要求。
@@ -58,13 +65,16 @@ def get_prompt_template(subject,style):
     )
     return prompt_template
 
-def generate_response(user_input,subject,style,memory):
-    client=ChatOpenAI(
+def get_llm():
+    return ChatOpenAI(
         api_key=st.secrets["OPENAI_API_KEY"],
         model="deepseek-chat",
         base_url="https://api.deepseek.com",
         temperature=0.0
     )
+
+def generate_response(user_input,subject,style,memory):
+    client=get_llm()
     prompt=get_prompt_template(subject,style)
     chain=ConversationChain(llm=client,memory=memory,prompt=prompt)
     response=chain.invoke({"input":user_input})
@@ -74,10 +84,10 @@ user_input=st.chat_input("你的问题/学习需求")
 
 if user_input:
     st.chat_message("user").write(user_input)
-    st.session_state["messages"].append({"role":"user","content":user_input})
+    current_messages.append({"role":"user","content":user_input})
     with st.spinner("AI正在思考中，请稍等..."):
         response=generate_response(
-            user_input,subject,style,st.session_state["memory"]
+            user_input,subject,style,current_memory
         )
     st.chat_message("assistant").write(response)
-    st.session_state["messages"].append({"role":"assistant","content":response})
+    current_messages.append({"role":"assistant","content":response})
